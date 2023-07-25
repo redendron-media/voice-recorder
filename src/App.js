@@ -61,11 +61,9 @@ const [audio, setAudio] = useState(null);
 
     return (
       <div className="audio-controls">
-      {permission && recordingStatus === "inactive" ? (
       <button onClick={startRecording} type="button">
           Start Recording
       </button>
-      ) : null}
       {recordingStatus === "recording" ? (
       <button onClick={stopRecording} type="button">
           Stop Recording
