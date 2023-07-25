@@ -1,6 +1,5 @@
 import './App.css';
-import { useRef, useState, useEffect } from 'react'
-import useReactMediaRecorder from 'react-media-recorder';
+import { useRef, useState } from 'react'
 
 function App() {
 const [permission, setPermission] = useState(false);
