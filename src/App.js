@@ -1,5 +1,8 @@
 import './App.css';
-import { useRef, useState,useEffect } from 'react'
+import { useRef, useState } from 'react'
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+
 
 function App() {
 const [permission, setPermission] = useState(false);
