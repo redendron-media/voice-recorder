@@ -1,5 +1,5 @@
 import './App.css';
-import { useRef, useState } from 'react'
+import { useRef, useState,useEffect } from 'react'
 
 function App() {
 const [permission, setPermission] = useState(false);
@@ -9,22 +9,18 @@ const [stream, setStream] = useState(null);
 const [audioChunks, setAudioChunks] = useState([]);
 const [audio, setAudio] = useState(null);
  
-const getMicrophonePermission = async () => {
-        if ("MediaRecorder" in window) {
-            try {
-                const streamData = await navigator.mediaDevices.getUserMedia({
-                    audio: true,
-                    video: false,
-                });
-                setPermission(true);
-                setStream(streamData);
-            } catch (err) {
-                alert(err.message);
-            }
-        } else {
-            alert("The MediaRecorder API is not supported in your browser.");
-        }
-    };
+    useEffect(() => {
+        getMicrophonePermission();
+    },[]);
+
+    const getMicrophonePermission = async () => {      
+        const streamData = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: false,
+        });
+        setPermission(true);
+        setStream(streamData);       
+        };
 
     const startRecording = async () => {
       setRecordingStatus("recording");
