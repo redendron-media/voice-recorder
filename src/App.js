@@ -9,35 +9,41 @@ const [stream, setStream] = useState(null);
 const [audioChunks, setAudioChunks] = useState([]);
 const [audio, setAudio] = useState(null);
  
-    useEffect(() => {
-        getMicrophonePermission();
-    },[]);
+    const getMicrophonePermission = async () => {  
+        try{
+            const streamData = await navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: false,
 
-    const getMicrophonePermission = async () => {      
-        const streamData = await navigator.mediaDevices.getUserMedia({
-            audio: true,
-            video: false,
         });
-        setPermission(true);
-        setStream(streamData);       
+            return (streamData);
+        }catch(err){
+            alert(err.message);
+            return null;
+        }    
         };
 
     const startRecording = async () => {
-      setRecordingStatus("recording");
-      //create new Media recorder instance using the stream
-      const media = new MediaRecorder(stream, { type: 'audio/mpeg' });
-      //set the MediaRecorder instance to the mediaRecorder ref
-      mediaRecorder.current = media;
-      //invokes the start method to start the recording process
-      mediaRecorder.current.start();
-      let localAudioChunks = [];
-      mediaRecorder.current.ondataavailable = (event) => {
-         if (typeof event.data === "undefined") return;
-         if (event.data.size === 0) return;
-         localAudioChunks.push(event.data);
-      };
-      setAudioChunks(localAudioChunks);
-    };
+        const streamData = await getMicrophonePermission();
+        if (streamData) {
+            // Permission granted, continue with the rest of the function
+            setPermission(true);
+            setStream(streamData);
+            setRecordingStatus("recording");
+            const media = new MediaRecorder(streamData, { type: 'audio/mpeg' });
+            mediaRecorder.current = media;
+            mediaRecorder.current.start();
+            let localAudioChunks = [];
+            mediaRecorder.current.ondataavailable = (event) => {
+            if (typeof event.data === "undefined") return;
+            if (event.data.size === 0) return;
+            localAudioChunks.push(event.data);
+            };
+            setAudioChunks(localAudioChunks);
+        } else {
+            alert('Microphone access not granted')
+        }
+        };
 
     const stopRecording = () => {
       setRecordingStatus("inactive");
