@@ -81,7 +81,7 @@ const [audioBlob, setAudioBlob] = useState(null);
 
     uploadTask.on('state_changed', 
       (snapshot) => {
-        // Add some progress functionality here if desired
+        // progress bar
       }, 
       (error) => {
         console.log(error);
