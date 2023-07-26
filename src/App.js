@@ -1,14 +1,10 @@
-import './App.css';
 import { useRef, useState } from 'react'
 import {GrClose} from 'react-icons/gr'
 import {BsMic} from 'react-icons/bs'
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
-import { app } from 'firebase/firebase.js';
+import { getDatabase, ref, set,push } from 'firebase/database';
+//import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { storage,db } from './firebase.js';
 
-// Get a reference to Firestore and Firebase Storage
-const db = getFirestore(app);
-const storage = getStorage(app);
 
 function App() {
 const [permission, setPermission] = useState(false);
@@ -17,9 +13,9 @@ const [recordingStatus, setRecordingStatus] = useState("inactive");
 const [stream, setStream] = useState(null);
 const [audioChunks, setAudioChunks] = useState([]);
 const [audio, setAudio] = useState(null);
+const [audioBlob, setAudioBlob] = useState(null);
 const [firstName, setFirstName] = useState('');
 const [email, setEmail] = useState('');
-const [audioBlob, setAudioBlob] = useState(null);
  
     const getMicrophonePermission = async () => {  
         try{
@@ -74,32 +70,97 @@ const [audioBlob, setAudioBlob] = useState(null);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    console.log('Form data:', firstName, email);
+    console.log('Audio URL:', audio);
+    console.log('Audio Blob:', audioBlob);
+  
 
-    // Upload the audio file to Firebase Storage
-    const storageRef = ref(storage, `${firstName}-${Date.now()}.mp3`);
-    const uploadTask = uploadBytesResumable(storageRef, audioBlob);
+    if(audio) {
+        
+        const formDataRef = ref(db,'formSubmissionsVoiceNotes');
 
-    uploadTask.on('state_changed', 
-      (snapshot) => {
-        // Add some progress functionality here if desired
-      }, 
-      (error) => {
-        console.log(error);
-      }, 
-      async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        // Save the form data to Firestore
-        await setDoc(doc(db, "formSubmissionsVoiceNotes", `${firstName}-${Date.now()}`), {
-          name: firstName,
-          email: email,
-          audioURL: downloadURL
-        });
-      }
-    );
+        const newFormEntryRef = push(formDataRef);
+        set(newFormEntryRef, {
+            firstName: firstName,
+            email: email,
+            audioUrl:'',
+        })
+        .then((docRef) =>{
+            console.log('Form data and audio URL saved successfully with ID:')
+
+            if (audioBlob) {
+                const storageRef = storage.ref();
+                const audioFileRef = storageRef.child(`audio_files/${newFormEntryRef.key}.mp3`);
+                
+                audioFileRef
+                .put(audioBlob)
+                .then((snapshot) => {
+                  console.log('Audio file uploaded successfully!');
+                  
+                //   audioFileRef.getDownloadURL().then((audioUrl) => {
+                //     set(newFormEntryRef, { audioUrl: audioUrl }, { merge: true })
+                //     .then(() => {
+                //       console.log('Audio URL saved in the database successfully!');
+                //     })
+                //     .catch((error) => {
+                //       console.error('Error saving audio URL in the database: ', error);
+                //     });
+                //   }) 
+
+                })
+                .catch((error) => {
+                    console.error('Error uploading audio file: ', error);
+                  });
+            }
+        })  
+        .catch((error) => {
+            console.error('Error saving form data and audio URL: ', error);
+          });
+       
+        // const storageRef = ref(storage, `${firstName}-${Date.now()}.mp3`);
+        // const uploadTask = uploadBytesResumable(storageRef, audioBlob);
+        // uploadTask.on('state_changed',
+        // (snapshot) =>{
+
+        // },
+        // async () =>{
+        //     const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+        //     db.collection('formSubmissionsVoiceNotes')
+        //         .add({
+        //             name: firstName,
+        //             email: email,
+        //             audioURL: downloadURL
+        //         }).then(() =>{
+        //             alert("Message has been submitted")
+        //         })
+        // }
+        // )
+        // uploadTask.on('state_changed', 
+        //   (snapshot) => {
+        //     // Add some progress functionality here if desired
+        //   }, 
+        //   (error) => {
+        //     console.log(error);
+        //   }, 
+        //   async () => {
+        //     const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+        //     // Save the form data to Firestore
+        //     await setDoc(doc(db, "formSubmissionsVoiceNotes", `${firstName}-${Date.now()}`), {
+        //       name: firstName,
+        //       email: email,
+        //       audioURL: downloadURL
+        //     });
+        //   } );
+    }
+
+    else {
+        alert('Please record a voice note')
+    }  
+   
   }
 
     return (
-        <form onSubmit={handleSubmit} className='bg-[#DCD1C6] w-full h-screen align-middle content-center justify-center'>
+        <div  className='bg-[#DCD1C6] w-full h-screen align-middle content-center justify-center'>
             <div className='flex-col bg-white p-6 justify-self-center align-middle mx-auto w-1/3 shadow-lg'>
                 <div className='w-[50%]'>
                     <label htmlFor="first_name" className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'>First Name</label>
@@ -123,16 +184,17 @@ const [audioBlob, setAudioBlob] = useState(null);
                 </div>
                 <div className='flex items-center justify-between gap-5'>
                     <div className='flex items-center gap-4'>
-                        {permission ? <p className='text-sm text-red-600'>Microphone Access Granted</p> : <p className='text-sm text-yellow-500'>Microphone Access Needed</p>}
-                        {recordingStatus === 'recording' ? <GrClose className='text-xl text-red-500 cursor-pointer' onClick={stopRecording}/> : <BsMic className='text-xl text-gray-500 cursor-pointer' onClick={startRecording}/>}
+                        {recordingStatus === 'recording' ? <GrClose className='text-xl cursor-pointer' onClick={stopRecording}/> : <BsMic className='text-xl text-gray-500 cursor-pointer' onClick={startRecording}/>}
                     </div>
-                    <button className='px-6 py-2 bg-red-500 text-white rounded-lg'>Submit</button>
                 </div>
                 <div className='mt-5'>
                     <audio controls src={audio}></audio>
                 </div>
+                <div className=' mt-6'>
+                    <GrClose className='text-xl cursor-pointer' onClick={handleSubmit}/>
+                </div>
             </div>
-        </form>
+        </div>
     );
 }
 

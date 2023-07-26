@@ -1,4 +1,6 @@
 import { initializeApp } from "firebase/app";
+import { getStorage } from 'firebase/storage';
+import { getDatabase} from 'firebase/database';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDa3_Bfm5ZztHLp62bjE0wDZ_H_PFJp4Ys",
@@ -8,4 +10,9 @@ const firebaseConfig = {
     messagingSenderId: "474517012693",
     appId: "1:474517012693:web:a4eacac670c74afd03625c"
   };
-  const app = initializeApp(firebaseConfig);
+  const firebaseApp = initializeApp(firebaseConfig);
+
+  const storage = getStorage(firebaseApp);
+  const db = getDatabase();
+  //const db = firebaseApp.firestore();
+  export { storage,db };
