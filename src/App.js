@@ -2,6 +2,8 @@ import './App.css';
 import { useRef, useState } from 'react'
 import {GrClose} from 'react-icons/gr'
 import {BsMic} from 'react-icons/bs'
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 
 
 function App() {
@@ -11,6 +13,8 @@ const [recordingStatus, setRecordingStatus] = useState("inactive");
 const [stream, setStream] = useState(null);
 const [audioChunks, setAudioChunks] = useState([]);
 const [audio, setAudio] = useState(null);
+const [firstName, setFirstName] = useState('');
+const [email, setEmail] = useState('');
  
     const getMicrophonePermission = async () => {  
         try{
@@ -63,17 +67,6 @@ const [audio, setAudio] = useState(null);
     };
 
     return (
-//       <div className="audio-controls">
-//       <button onClick={startRecording} type="button">
-//           Start Recording
-//       </button>
-//       {recordingStatus === "recording" ? (
-//       <button onClick={stopRecording} type="button">
-//           Stop Recording
-//       </button>
-//       ) : null}
-//        <audio src={audio} controls></audio>
-//   </div>
         <div className='bg-[#DCD1C6] w-full h-screen align-middle content-center justify-center'>
             <div className='flex-col bg-white p-6 justify-self-center align-middle mx-auto w-1/3 shadow-lg'>
                 <div className='w-[50%]'>
@@ -82,6 +75,7 @@ const [audio, setAudio] = useState(null);
                         type="text" id="first_name" 
                         className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${recordingStatus !== 'recording' && 'required'}`} 
                         placeholder="First Name" 
+                        onChange={setFirstName}
                         required/>
                 </div>
                 <div className='w-[50%] my-6'>
@@ -89,6 +83,7 @@ const [audio, setAudio] = useState(null);
                     <input 
                         type="email" 
                         id="email" 
+                        onChange={setEmail}
                         className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${recordingStatus !== 'recording' && 'required'}`} 
                         placeholder="Email" 
                         required/>
