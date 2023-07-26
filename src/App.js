@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import {GrClose} from 'react-icons/gr'
 import {BsMic} from 'react-icons/bs'
 
+
 function App() {
 const [permission, setPermission] = useState(false);
 const mediaRecorder = useRef(null);
@@ -10,7 +11,6 @@ const [recordingStatus, setRecordingStatus] = useState("inactive");
 const [stream, setStream] = useState(null);
 const [audioChunks, setAudioChunks] = useState([]);
 const [audio, setAudio] = useState(null);
-const audioRef = useRef(null);
  
     const getMicrophonePermission = async () => {  
         try{
@@ -74,8 +74,8 @@ const audioRef = useRef(null);
 //       ) : null}
 //        <audio src={audio} controls></audio>
 //   </div>
-        <div className='bg-[#DCD1C6] w-full h-screen content-center justify-center'>
-            <form className='flex-col bg-white p-6 justify-self-center align-middle mx-auto w-1/3 shadow-lg'>
+        <div className='bg-[#DCD1C6] w-full h-screen align-middle content-center justify-center'>
+            <div className='flex-col bg-white p-6 justify-self-center align-middle mx-auto w-1/3 shadow-lg'>
                 <div className='w-[50%]'>
                     <label for="first_name" className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'>First Name</label>
                     <input  
@@ -96,11 +96,11 @@ const audioRef = useRef(null);
                 <div className='flex flex-row w-auto gap-x-6 h-20'>
                     <div>
                         {recordingStatus === 'recording' ? (
-                            <button onClick={stopRecording} className='flex items-center justify-center w-12 h-12 rounded-full bg-transparent hover:bg-gray-100 focus:outline-none focus:ring focus:ring-blue-200 shadow-xl'>
+                            <button type='' onClick={stopRecording} className='flex items-center justify-center w-12 h-12 rounded-full bg-transparent hover:bg-gray-100 focus:outline-none focus:ring focus:ring-blue-200 shadow-xl'>
                             <GrClose className='text-2xl' />
                         </button>
                         ):(
-                            <button onClick={startRecording} className='flex items-center justify-center w-12 h-12 rounded-full bg-transparent hover:bg-gray-100 focus:outline-none focus:ring focus:ring-blue-200 shadow-xl'>
+                            <button type='' onClick={startRecording} className='flex items-center justify-center w-12 h-12 rounded-full bg-transparent hover:bg-gray-100 focus:outline-none focus:ring focus:ring-blue-200 shadow-xl'>
                             <BsMic className='text-2xl' />
                         </button>
                         )}
@@ -116,7 +116,7 @@ const audioRef = useRef(null);
                 <div className='my-6'>
                         <button type='submit' className='bg-[#2a3135] text-white p-2 w-26 text-lg shadow-md rounded'>Submit</button>
                 </div>
-            </form>
+            </div>
             
         </div>
     );
