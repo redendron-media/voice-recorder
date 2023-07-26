@@ -2,7 +2,13 @@ import './App.css';
 import { useRef, useState } from 'react'
 import {GrClose} from 'react-icons/gr'
 import {BsMic} from 'react-icons/bs'
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { app } from 'firebase/firebase.js';
 
+// Get a reference to Firestore and Firebase Storage
+const db = getFirestore(app);
+const storage = getStorage(app);
 
 function App() {
 const [permission, setPermission] = useState(false);
@@ -13,6 +19,7 @@ const [audioChunks, setAudioChunks] = useState([]);
 const [audio, setAudio] = useState(null);
 const [firstName, setFirstName] = useState('');
 const [email, setEmail] = useState('');
+const [audioBlob, setAudioBlob] = useState(null);
  
     const getMicrophonePermission = async () => {  
         try{
@@ -60,71 +67,73 @@ const [email, setEmail] = useState('');
       //creates a playable URL from the blob file.
       const audioUrl = URL.createObjectURL(audioBlob);
       setAudio(audioUrl);
+      setAudioBlob(audioBlob);
       setAudioChunks([]);
     };
   };
-  
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    // Upload the audio file to Firebase Storage
+    const storageRef = ref(storage, `${firstName}-${Date.now()}.mp3`);
+    const uploadTask = uploadBytesResumable(storageRef, audioBlob);
+
+    uploadTask.on('state_changed', 
+      (snapshot) => {
+        // Add some progress functionality here if desired
+      }, 
+      (error) => {
+        console.log(error);
+      }, 
+      async () => {
+        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+        // Save the form data to Firestore
+        await setDoc(doc(db, "formSubmissionsVoiceNotes", `${firstName}-${Date.now()}`), {
+          name: firstName,
+          email: email,
+          audioURL: downloadURL
+        });
+      }
+    );
+  }
 
     return (
-//       <div className="audio-controls">
-//       <button onClick={startRecording} type="button">
-//           Start Recording
-//       </button>
-//       {recordingStatus === "recording" ? (
-//       <button onClick={stopRecording} type="button">
-//           Stop Recording
-//       </button>
-//       ) : null}
-//        <audio src={audio} controls></audio>
-//   </div>
-        <div className='bg-[#DCD1C6] w-full h-screen align-middle content-center justify-center'>
+        <form onSubmit={handleSubmit} className='bg-[#DCD1C6] w-full h-screen align-middle content-center justify-center'>
             <div className='flex-col bg-white p-6 justify-self-center align-middle mx-auto w-1/3 shadow-lg'>
                 <div className='w-[50%]'>
-                    <label for="first_name" className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'>First Name</label>
+                    <label htmlFor="first_name" className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'>First Name</label>
                     <input  
                         type="text" id="first_name" 
                         className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${recordingStatus !== 'recording' && 'required'}`} 
                         placeholder="First Name"
-                        onChange={setFirstName} 
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)} 
                         required/>
                 </div>
                 <div className='w-[50%] my-6'>
-                    <label for="email" className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'>Email</label>
-                    <input 
-                        type="email" 
-                        id="email" 
+                    <label htmlFor="email" className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'>Email</label>
+                    <input  
+                        type="email" id="email" 
                         className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${recordingStatus !== 'recording' && 'required'}`} 
-                        placeholder="Email" 
-                        onChange={setEmail}
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)} 
                         required/>
                 </div>
-                <div className='flex flex-row w-auto gap-x-6 h-20'>
-                    <div>
-                        {recordingStatus === 'recording' ? (
-                            <button type='' onClick={stopRecording} className='flex items-center justify-center w-12 h-12 rounded-full bg-transparent hover:bg-gray-100 focus:outline-none focus:ring focus:ring-blue-200 shadow-xl'>
-                            <GrClose className='text-2xl' />
-                        </button>
-                        ):(
-                            <button type='' onClick={startRecording} className='flex items-center justify-center w-12 h-12 rounded-full bg-transparent hover:bg-gray-100 focus:outline-none focus:ring focus:ring-blue-200 shadow-xl'>
-                            <BsMic className='text-2xl' />
-                        </button>
-                        )}
+                <div className='flex items-center justify-between gap-5'>
+                    <div className='flex items-center gap-4'>
+                        {permission ? <p className='text-sm text-red-600'>Microphone Access Granted</p> : <p className='text-sm text-yellow-500'>Microphone Access Needed</p>}
+                        {recordingStatus === 'recording' ? <GrClose className='text-xl text-red-500 cursor-pointer' onClick={stopRecording}/> : <BsMic className='text-xl text-gray-500 cursor-pointer' onClick={startRecording}/>}
                     </div>
-                    <div>
-                        {audio != null ? (
-                        <audio controls src={audio}></audio>
-                        ):(
-                            <></>
-                        )}      
-                    </div>
+                    <button className='px-6 py-2 bg-red-500 text-white rounded-lg'>Submit</button>
                 </div>
-                <div className='my-6'>
-                        <button type='submit' className='bg-[#2a3135] text-white p-2 w-26 text-lg shadow-md rounded'>Submit</button>
+                <div className='mt-5'>
+                    <audio controls src={audio}></audio>
                 </div>
             </div>
-            
-        </div>
+        </form>
     );
-  };
+}
 
 export default App;
