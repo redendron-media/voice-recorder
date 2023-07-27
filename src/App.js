@@ -148,7 +148,7 @@ function App() {
             }
           </div>
           <div>
-            {recordingStatus === 'inactive' || recordingStatus == 'recording' ? (
+            {recordingStatus === 'inactive' || recordingStatus === 'recording' ? (
               <></>
             ) : (
               <audio controls src={audio}></audio>
