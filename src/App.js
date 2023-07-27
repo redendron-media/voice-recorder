@@ -4,7 +4,7 @@ import { BsMic } from 'react-icons/bs'
 import { getDatabase, ref, set, push } from 'firebase/database';
 //import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { storage, db } from './firebase.js';
-import { uploadBytes, ref } from 'firebase/storage';
+import { uploadBytes } from 'firebase/storage';
 
 
 function App() {
