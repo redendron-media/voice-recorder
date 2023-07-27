@@ -4,7 +4,7 @@ import { BsMic } from 'react-icons/bs'
 import { getDatabase, ref, set, push } from 'firebase/database';
 //import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { storage, db } from './firebase.js';
-import { uploadBytes } from 'firebase/storage';
+import { uploadBytes, ref } from 'firebase/storage';
 
 
 function App() {
@@ -69,12 +69,10 @@ function App() {
     };
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const handleSubmit = async () => {
     console.log('Form data:', firstName, email);
     console.log('Audio URL:', audio);
     console.log('Audio Blob:', audioBlob);
-
 
     if (audio) {
 
