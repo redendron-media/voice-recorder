@@ -1,10 +1,10 @@
 import { useRef, useState } from 'react'
 import { GrClose } from 'react-icons/gr'
 import { BsMic } from 'react-icons/bs'
-import { getDatabase, ref, set, push } from 'firebase/database';
+import { getDatabase, ref, set, push, update } from 'firebase/database';
 //import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { storage, db } from './firebase.js';
-import { uploadBytes } from 'firebase/storage';
+import { uploadBytes,ref as storageref, getDownloadURL } from 'firebase/storage';
 
 
 function App() {
@@ -69,97 +69,48 @@ function App() {
     };
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    console.log('Form data:', firstName, email);
-    console.log('Audio URL:', audio);
-    console.log('Audio Blob:', audioBlob);
-
-
+  const handleSubmit = async () => {
     if (audio) {
 
       const formDataRef = ref(db, 'formSubmissionsVoiceNotes');
 
       const newFormEntryRef = push(formDataRef);
 
-      if (audioBlob) {
-        // Unique file name
-        const filename = `${Date.now()}.mp3`;
-        // Create a reference to the file in Firebase Storage
-        const storageRef = ref(storage, filename);
-
-        uploadBytes(storageRef, audioBlob).then((snapshot) => {
-          console.log('Uploaded a blob or file!');
-        }).catch((error) => {
-          console.error("Error uploading file: ", error);
-        });
-      } else {
-        console.error("No audio data to upload");
-      }
-
       set(newFormEntryRef, {
         firstName: firstName,
         email: email,
         audioUrl: '',
+        date:Date.now(),
       })
         .then((docRef) => {
-          console.log('Form data and audio URL saved successfully with ID:')
+          console.log('Form data and audio URL saved successfully with ID:')         
+        
+          if (audioBlob) {
+            const filename = `${Date.now()}.mp3`;
+            const storageRef = storageref(storage, filename);
+    
+            uploadBytes(storageRef, audioBlob).then((snapshot) => {
+              console.log('Uploaded a blob or file!');
 
-         
-          // const audioFileRef = storageRef.child(`audio_files/${newFormEntryRef.key}.mp3`);  
-          // audioFileRef
-          // .put(audioBlob)
-          // .then((snapshot) => {
-          //   console.log('Audio file uploaded successfully!');
+              getDownloadURL(storageRef)
+              .then((audioUrl) =>{
+                update(newFormEntryRef, {audioUrl: audioUrl})
+                .then(() =>{
+                  console.log('Audio URL saved in the database successfully!');
+                })
+                .catch((error) =>{
+                   console.error('Error saving audio URL in the database:', error);
+                })
+              })
 
-          //   audioFileRef.getDownloadURL().then((audioUrl) => {
-          //     set(newFormEntryRef, { audioUrl: audioUrl }, { merge: true })
-          //     .then(() => {
-          //       console.log('Audio URL saved in the database successfully!');
-          //     })
-          //     .catch((error) => {
-          //       console.error('Error saving audio URL in the database: ', error);
-          //     });
-          //   }) 
-
-
+            }).catch((error) => {
+              console.error("Error uploading file: ", error);
+            });
+          } else {
+            console.error("No audio data to upload");
+          }
         })
     }
-    // const storageRef = ref(storage, `${firstName}-${Date.now()}.mp3`);
-    // const uploadTask = uploadBytesResumable(storageRef, audioBlob);
-    // uploadTask.on('state_changed',
-    // (snapshot) =>{
-
-    // },
-    // async () =>{
-    //     const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-    //     db.collection('formSubmissionsVoiceNotes')
-    //         .add({
-    //             name: firstName,
-    //             email: email,
-    //             audioURL: downloadURL
-    //         }).then(() =>{
-    //             alert("Message has been submitted")
-    //         })
-    // }
-    // )
-    // uploadTask.on('state_changed', 
-    //   (snapshot) => {
-    //     // Add some progress functionality here if desired
-    //   }, 
-    //   (error) => {
-    //     console.log(error);
-    //   }, 
-    //   async () => {
-    //     const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-    //     // Save the form data to Firestore
-    //     await setDoc(doc(db, "formSubmissionsVoiceNotes", `${firstName}-${Date.now()}`), {
-    //       name: firstName,
-    //       email: email,
-    //       audioURL: downloadURL
-    //     });
-    //   } );
-
     else {
       alert('Please record a voice note')
     }
