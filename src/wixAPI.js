@@ -7,7 +7,7 @@ const wixAPI = axios.create({
 });
 
 export const submitDataToWix = (data) => {
-  return wixAPI.post('/collections/voiceNoteSubmissions', data) // replace with your collection name
+  return wixAPI.post('/collections/voiceNoteSubmissions', data)
     .then(response => response.data)
     .catch(err => console.error("Error: ", err));
 };

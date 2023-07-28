@@ -6,7 +6,7 @@ import { storage, db } from './firebase.js';
 import { uploadBytes,ref as storageref, getDownloadURL } from 'firebase/storage';
 import logo from './assets/Logo.png';
 import footerImg from './assets/footer.png';
-import { Checkbox } from 'flowbite-react';
+import {submitDataToWix} from './wixAPI.js'
 
 function App() {
   const [permission, setPermission] = useState(false);
@@ -110,6 +110,8 @@ function App() {
                 update(newFormEntryRef, {audioUrl: audioUrl})
                 .then(() =>{
                   alert('Thank you! Your response has received');
+                //   const response = submitDataToWix({ firstName, email, audioUrl });
+                //  console.log(response);
                 })
                 .catch((error) =>{
                    console.error('Error saving audio URL in the database:', error);
@@ -123,89 +125,97 @@ function App() {
           console.error("No audio data to upload");
         }
       });
-      const response = await submitDataToWix({ firstName, email, audioUrl });
-      console.log(response);
+     
     } else {
       alert("Please record a voice note");
     }
   };
 
+  const handleImageClick = () => {
+    window.location.href = 'https://maxmahershow.com/';
+  };
+
   return (
-    <div className='bg-[#DCD1C6] flex w-full flex-col h-screen items-center justify-between'>
-      <section id='header' className=' w-full flex  justify-center items-center py-8 min-h-[101px] bg-[#E1BBB2]'>
-        <img className='w-[12%] h-auto' src={logo}  />
+    <div className='bg-[#DCD1C6] flex w-full flex-col h-full items-center select-none'>
+      <section id='header' className=' w-full flex mb-6 justify-center items-center py-8 min-h-[101px] bg-[#E1BBB2]'>
+        <img className='w-[20%] md:w-[12%] h-auto cursor-pointer select-none' src={logo} onClick={handleImageClick} />
       </section>
-      <div className='flex-col bg-white h-auto px-12 py-16  my-8  justify-self-center align min-h-0 mx-auto w-3/4 md:w-1/2 lg:w-1/3 shadow-lg rounded-md'>
-        <div className='w-[100%] justify-center'>
-          <label htmlFor="first_name" className='block mb-2 text-md font-medium text-gray-900 dark:text-white'>First Name</label>
-          <input
-            type="text"
-            id="first_name"
-            className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${
-              recordingStatus !== "recording" && "required"
-            }`}
-            placeholder="First Name"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            required
-          />
-        </div>
-        <div className="w-[100%] my-6">
-          <label
-            htmlFor="email"
-            className="block mb-2 text-md font-medium text-gray-900 dark:text-white"
-          >
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${
-              recordingStatus !== "recording" && "required"
-            }`}
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className='flex items-center gap-x-6 my-8'>
-          <div className='flex items-center min-h-[55px]'>
-            {recordingStatus === 'recording' ?
-              <IoMdSquare className='flex p-2  w-10 h-10 cursor-pointer rounded-full bg-transparent hover:bg-gray-100 focus:outline-none focus:ring focus:ring-blue-200 shadow-xl ' onClick={stopRecording} /> :
-              <BsMic className='flex p-2 w-10 h-10 cursor-pointer rounded-full bg-transparent hover:bg-gray-100 focus:outline-none focus:ring focus:ring-blue-200 shadow-xl' onClick={startRecording} />
-            }
+      <div className='flex flex-col flex-grow w-full max-w-full my-6'>
+        <div className='bg-white  px-12 py-16    justify-self-center align  mx-auto w-3/4 md:w-1/2 lg:w-1/3 shadow-lg rounded-md'>
+          <div className='w-[100%] justify-center'>
+            <label htmlFor="first_name" className='block mb-2 text-md font-medium text-gray-900 dark:text-white'>First Name</label>
+            <input
+              type="text"
+              id="first_name"
+              className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${
+                recordingStatus !== "recording" && "required"
+              }`}
+              placeholder="First Name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+            />
           </div>
-          <div>
-            {recordingStatus === "inactive" ||
-            recordingStatus === "recording" ? (
-              <></>
-            ) : (
-              <audio controls src={audio}></audio>
-            )}
+          <div className="w-[100%] my-6">
+            <label
+              htmlFor="email"
+              className="block mb-2 text-md font-medium text-gray-900 dark:text-white"
+            >
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${
+                recordingStatus !== "recording" && "required"
+              }`}
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
-        </div>
-        <div className='flex flex-row items-start gap-x-4'>
-          <input
-            type='checkbox'
-            id='consent'
-            checked= {isChecked}
-            onChange={handleCheckboxChange}
-            className='w-6 h-6 focus:outline-none'
-          />
-          <div className='flex flex-col'>
-          <label htmlFor='consent'>
-            I confirm that I want to receive content from this company using any contact information I provide.
-          </label>
-          {showMessage &&  <p style={{ color: 'red' }}>Please click the checkbox to confirm before submitting.</p>}
+          <div className='flex flex-col md:flex-row items-center gap-x-6 my-8'>
+            <div className='flex items-center min-h-[55px] mb-6 md:mb-0'>
+              {recordingStatus === 'recording' ?
+                <IoMdSquare className='flex p-2  w-10 h-10 cursor-pointer rounded-full bg-transparent hover:bg-gray-100 focus:outline-none focus:ring focus:ring-blue-200 shadow-xl ' onClick={stopRecording} /> :
+                <BsMic className='flex p-2 w-10 h-10 cursor-pointer rounded-full bg-transparent hover:bg-gray-100 focus:outline-none focus:ring focus:ring-blue-200 shadow-xl' onClick={startRecording} />
+              }
+            </div>
+            <div className="w-full max-w-full overflow-hidden">
+              {recordingStatus === "inactive" ||
+              recordingStatus === "recording" ? (
+                <></>
+              ) : (
+                <audio 
+                className='w-full'
+                controls src={audio}></audio>
+              )}
+            </div>
           </div>
-        </div>
-        <div className='mt-8'>
-          <button className='shadow-md bg-[#2A3135] py-2 px-4 rounded-md text-xl  text-white cursor-pointer' onClick={handleSubmit}>Submit</button>
+          <div className='flex flex-row items-start gap-x-4'>
+            <input
+              type='checkbox'
+              id='consent'
+              checked= {isChecked}
+              onChange={handleCheckboxChange}
+              className='w-6 h-6 focus:outline-none mt-2'
+            />
+            <div className='flex flex-col min-h-[80px] text-xs md:text-baseline lg:text-lg'>
+              <label htmlFor='consent'>
+                I confirm that I want to receive content from this company using any contact information I provide.
+              </label>
+              {showMessage && 
+                <p className='text-sm' style={{ color: 'red',marginTop:12 }}>Please accept the terms before submitting.</p>}
+            </div>
+          </div>
+          <div className='mt-6'>
+            <button className='shadow-md bg-[#2A3135] py-2 px-4 rounded-md text-xl  text-white cursor-pointer' onClick={handleSubmit}>Submit</button>
+          </div>
         </div>
       </div>
-      <section id='footer' className='w-full  flex justify-center items-center py-8 min-h-[180px] bg-[#E1BBB2]'>
-        <img className='w-[12%] h-auto' src={footerImg}/>
+      <section id='footer' className='w-full mt-6 flex justify-center items-center py-6 min-h-[180px] bg-[#E1BBB2]'>
+        <img className='w-[25%] md:w-[12%] h-auto select-none' src={footerImg}/>
       </section>
     </div>
   );
