@@ -31,9 +31,8 @@ function App() {
       const streamData = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: false,
-
       });
-      return (streamData);
+      return streamData;
     } catch (err) {
       alert(err.message);
       return null;
@@ -86,26 +85,25 @@ function App() {
     }
 
     if (audio) {
-
-      const formDataRef = ref(db, 'formSubmissionsVoiceNotes');
+      const formDataRef = ref(db, "formSubmissionsVoiceNotes");
 
       const newFormEntryRef = push(formDataRef);
 
       set(newFormEntryRef, {
         firstName: firstName,
         email: email,
-        audioUrl: '',
-        date:Date.now(),
-      })
-        .then((docRef) => {
-          console.log('Form data and audio URL saved successfully with ID:')         
-        
-          if (audioBlob) {
-            const filename = `${Date.now()}.mp3`;
-            const storageRef = storageref(storage, filename);
-    
-            uploadBytes(storageRef, audioBlob).then((snapshot) => {
-              console.log('Uploaded a blob or file!');
+        audioUrl: "",
+        date: Date.now(),
+      }).then((docRef) => {
+        console.log("Form data and audio URL saved successfully with ID:");
+
+        if (audioBlob) {
+          const filename = `${Date.now()}.mp3`;
+          const storageRef = storageref(storage, filename);
+
+          uploadBytes(storageRef, audioBlob)
+            .then((snapshot) => {
+              console.log("Uploaded a blob or file!");
 
               getDownloadURL(storageRef)
               .then((audioUrl) =>{
@@ -121,16 +119,16 @@ function App() {
             }).catch((error) => {
               console.error("Error uploading file: ", error);
             });
-          } else {
-            console.error("No audio data to upload");
-          }
-        })
+        } else {
+          console.error("No audio data to upload");
+        }
+      });
+      const response = await submitDataToWix({ firstName, email, audioUrl });
+      console.log(response);
+    } else {
+      alert("Please record a voice note");
     }
-    else {
-      alert('Please record a voice note')
-    }
-
-  }
+  };
 
   return (
     <div className='bg-[#DCD1C6] flex w-full flex-col h-screen items-center justify-between'>
@@ -141,22 +139,35 @@ function App() {
         <div className='w-[100%] justify-center'>
           <label htmlFor="first_name" className='block mb-2 text-md font-medium text-gray-900 dark:text-white'>First Name</label>
           <input
-            type="text" id="first_name"
-            className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${recordingStatus !== 'recording' && 'required'}`}
+            type="text"
+            id="first_name"
+            className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${
+              recordingStatus !== "recording" && "required"
+            }`}
             placeholder="First Name"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            required />
+            required
+          />
         </div>
-        <div className='w-[100%] my-6'>
-          <label htmlFor="email" className='block mb-2 text-md font-medium text-gray-900 dark:text-white'>Email</label>
+        <div className="w-[100%] my-6">
+          <label
+            htmlFor="email"
+            className="block mb-2 text-md font-medium text-gray-900 dark:text-white"
+          >
+            Email
+          </label>
           <input
-            type="email" id="email"
-            className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${recordingStatus !== 'recording' && 'required'}`}
+            type="email"
+            id="email"
+            className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${
+              recordingStatus !== "recording" && "required"
+            }`}
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required />
+            required
+          />
         </div>
         <div className='flex items-center gap-x-6 my-8'>
           <div className='flex items-center min-h-[55px]'>
@@ -166,13 +177,12 @@ function App() {
             }
           </div>
           <div>
-            {recordingStatus === 'inactive' || recordingStatus === 'recording' ? (
+            {recordingStatus === "inactive" ||
+            recordingStatus === "recording" ? (
               <></>
             ) : (
               <audio controls src={audio}></audio>
-            )
-            }
-
+            )}
           </div>
         </div>
         <div className='flex flex-row items-start gap-x-4'>
