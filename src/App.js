@@ -1,15 +1,12 @@
-import { useRef, useState } from "react";
-import { GrClose } from "react-icons/gr";
-import { BsMic } from "react-icons/bs";
-import { getDatabase, ref, set, push, update } from "firebase/database";
-import { storage, db } from "./firebase.js";
-import {
-  uploadBytes,
-  ref as storageref,
-  getDownloadURL,
-} from "firebase/storage";
-import logo from "./assets/Logo.png";
-import { submitDataToWix } from "./wixAPI";
+import { useRef, useState } from 'react'
+import { IoMdSquare } from 'react-icons/io'
+import { BsMic } from 'react-icons/bs'
+import { getDatabase, ref, set, push, update } from 'firebase/database';
+import { storage, db } from './firebase.js';
+import { uploadBytes,ref as storageref, getDownloadURL } from 'firebase/storage';
+import logo from './assets/Logo.png';
+import footerImg from './assets/footer.png';
+import { Checkbox } from 'flowbite-react';
 
 function App() {
   const [permission, setPermission] = useState(false);
@@ -19,8 +16,13 @@ function App() {
   const [audioChunks, setAudioChunks] = useState([]);
   const [audio, setAudio] = useState(null);
   const [audioBlob, setAudioBlob] = useState(null);
-  const [firstName, setFirstName] = useState("");
-  const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState('');
+  const [email, setEmail] = useState('');
+  const [isChecked, setIsChecked] = useState(false);
+
+  const handleCheckboxChange = (event) => {
+    setIsChecked(event.target.checked);
+  };
 
   const getMicrophonePermission = async () => {
     try {
@@ -94,22 +96,18 @@ function App() {
             .then((snapshot) => {
               console.log("Uploaded a blob or file!");
 
-              getDownloadURL(storageRef).then((audioUrl) => {
-                update(newFormEntryRef, { audioUrl: audioUrl })
-                  .then(() => {
-                    console.log(
-                      "Audio URL saved in the database successfully!"
-                    );
-                  })
-                  .catch((error) => {
-                    console.error(
-                      "Error saving audio URL in the database:",
-                      error
-                    );
-                  });
-              });
-            })
-            .catch((error) => {
+              getDownloadURL(storageRef)
+              .then((audioUrl) =>{
+                update(newFormEntryRef, {audioUrl: audioUrl})
+                .then(() =>{
+                  alert('Thank you! Your response has received');
+                })
+                .catch((error) =>{
+                   console.error('Error saving audio URL in the database:', error);
+                })
+              })
+
+            }).catch((error) => {
               console.error("Error uploading file: ", error);
             });
         } else {
@@ -124,21 +122,13 @@ function App() {
   };
 
   return (
-    <div className="bg-[#DCD1C6] flex w-full h-screen align-middle content-center justify-center">
-      <section
-        id="header"
-        className="absolute w-full top-0 flex justify-center items-center py-8 min-h-[101px] bg-[#E1BBB2]"
-      >
-        <img className="w-[12%] h-[12%]  " src={logo} />
+    <div className='bg-[#DCD1C6] flex w-full flex-col h-screen items-center justify-between'>
+      <section id='header' className=' w-full flex  justify-center items-center py-8 min-h-[101px] bg-[#E1BBB2]'>
+        <img className='w-[12%] h-auto' src={logo}  />
       </section>
-      <div className="flex-col bg-white h-auto px-6 py-12  justify-self-center align-middle min-h-0 my-auto mx-auto w-3/4 md:w-1/2 lg:w-1/3 shadow-lg rounded-md">
-        <div className="w-[100%] justify-center">
-          <label
-            htmlFor="first_name"
-            className="block mb-2 text-md font-medium text-gray-900 dark:text-white"
-          >
-            First Name
-          </label>
+      <div className='flex-col bg-white h-auto px-12 py-16  my-8  justify-self-center align min-h-0 mx-auto w-3/4 md:w-1/2 lg:w-1/3 shadow-lg rounded-md'>
+        <div className='w-[100%] justify-center'>
+          <label htmlFor="first_name" className='block mb-2 text-md font-medium text-gray-900 dark:text-white'>First Name</label>
           <input
             type="text"
             id="first_name"
@@ -170,19 +160,12 @@ function App() {
             required
           />
         </div>
-        <div className="flex items-center gap-x-6 my-8">
-          <div className="flex items-center">
-            {recordingStatus === "recording" ? (
-              <GrClose
-                className="flex p-1  w-10 h-10 cursor-pointer rounded-full bg-transparent hover:bg-gray-100 focus:outline-none focus:ring focus:ring-blue-200 shadow-xl "
-                onClick={stopRecording}
-              />
-            ) : (
-              <BsMic
-                className="flex p-1 w-10 h-10 cursor-pointer rounded-full bg-transparent hover:bg-gray-100 focus:outline-none focus:ring focus:ring-blue-200 shadow-xl"
-                onClick={startRecording}
-              />
-            )}
+        <div className='flex items-center gap-x-6 my-8'>
+          <div className='flex items-center min-h-[55px]'>
+            {recordingStatus === 'recording' ?
+              <IoMdSquare className='flex p-2  w-10 h-10 cursor-pointer rounded-full bg-transparent hover:bg-gray-100 focus:outline-none focus:ring focus:ring-blue-200 shadow-xl ' onClick={stopRecording} /> :
+              <BsMic className='flex p-2 w-10 h-10 cursor-pointer rounded-full bg-transparent hover:bg-gray-100 focus:outline-none focus:ring focus:ring-blue-200 shadow-xl' onClick={startRecording} />
+            }
           </div>
           <div>
             {recordingStatus === "inactive" ||
@@ -193,19 +176,23 @@ function App() {
             )}
           </div>
         </div>
-        <div className="mt-6">
-          <button
-            className="shadow-md bg-[#2A3135] py-2 px-4 rounded-md text-xl  text-white cursor-pointer"
-            onClick={handleSubmit}
-          >
-            Submit
-          </button>
+        <div className='flex flex-row items-start gap-x-4'>
+          <input
+            type='checkbox'
+            id='consent'
+            checked= {isChecked}
+            onChange={handleCheckboxChange}
+            className='w-6 h-6 focus:outline-none'
+          />
+          <label htmlFor='consent'> I confirm that I want to receive content from this company using any contact information I provide.</label>
+        </div>
+        <div className='mt-8'>
+          <button className='shadow-md bg-[#2A3135] py-2 px-4 rounded-md text-xl  text-white cursor-pointer' onClick={handleSubmit}>Submit</button>
         </div>
       </div>
-      <section
-        id="footer"
-        className="absolute w-full bottom-0 flex justify-center items-center py-8 min-h-[101px] bg-[#E1BBB2]"
-      ></section>
+      <section id='footer' className='w-full  flex justify-center items-center py-8 min-h-[180px] bg-[#E1BBB2]'>
+        <img className='w-[12%] h-auto' src={footerImg}/>
+      </section>
     </div>
   );
 }
