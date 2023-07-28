@@ -70,10 +70,7 @@ function App() {
   };
 
   const handleSubmit = async () => {
-    console.log('Form data:', firstName, email);
-    console.log('Audio URL:', audio);
-    console.log('Audio Blob:', audioBlob);
-
+  
     if (audio) {
 
       const formDataRef = ref(db, 'formSubmissionsVoiceNotes');
