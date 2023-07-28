@@ -19,9 +19,11 @@ function App() {
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
   const [isChecked, setIsChecked] = useState(false);
+  const [showMessage, setShowMessage] = useState(false);
 
   const handleCheckboxChange = (event) => {
     setIsChecked(event.target.checked);
+    setShowMessage(false);
   };
 
   const getMicrophonePermission = async () => {
@@ -75,7 +77,14 @@ function App() {
     };
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if(!isChecked){
+      setShowMessage(true);
+      return;
+    }
+
     if (audio) {
 
       const formDataRef = ref(db, 'formSubmissionsVoiceNotes');
@@ -174,7 +183,12 @@ function App() {
             onChange={handleCheckboxChange}
             className='w-6 h-6 focus:outline-none'
           />
-          <label htmlFor='consent'> I confirm that I want to receive content from this company using any contact information I provide.</label>
+          <div className='flex flex-col'>
+          <label htmlFor='consent'>
+            I confirm that I want to receive content from this company using any contact information I provide.
+          </label>
+          {showMessage &&  <p style={{ color: 'red' }}>Please click the checkbox to confirm before submitting.</p>}
+          </div>
         </div>
         <div className='mt-8'>
           <button className='shadow-md bg-[#2A3135] py-2 px-4 rounded-md text-xl  text-white cursor-pointer' onClick={handleSubmit}>Submit</button>
